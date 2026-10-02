@@ -184,3 +184,37 @@ export interface DistanceAlignmentResult {
   diffGridVsTopo: number; // Lt - Lc
   diffGeodVsTopo: number; // Lt - Lo
 }
+
+export interface UtmToGeodesicResult {
+  pointName: string;
+  east: number;
+  north: number;
+  zone: number;
+  hemisphere: 'N' | 'S';
+  ellipsoid: Ellipsoid;
+  
+  // Auxiliary
+  footprintLatDeg: number;
+  footprintLatRad: number;
+  centralMeridianDeg: number;
+  
+  // Final
+  latDecimal: number;
+  lonDecimal: number;
+  latDms: DMSCoordinate;
+  lonDms: DMSCoordinate;
+  kScale: number;
+  convergenceMeridianDeg: number;
+}
+
+export interface PresetPoint {
+  name: string;
+  latDms: { degrees: number; minutes: number; seconds: number; direction: 'N' | 'S' };
+  lonDms: { degrees: number; minutes: number; seconds: number; direction: 'E' | 'W' };
+  east?: number;
+  north?: number;
+  h?: number;
+  forcedZone?: number;
+  cui?: string;
+}
+

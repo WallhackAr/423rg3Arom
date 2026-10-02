@@ -11,6 +11,8 @@ import {
   GeodesicToUtmResult,
   PointFactorsResult,
   DistanceAlignmentResult,
+  UtmToGeodesicResult,
+  PresetPoint,
 } from '../types/geodesy';
 
 /** Convert DMS to Decimal Degrees */
@@ -352,28 +354,6 @@ export function calculateAlignmentDistance(
 }
 
 /** Inverse Transformation: UTM Coordinates to Geodesic (Lat, Lon) */
-export interface UtmToGeodesicResult {
-  pointName: string;
-  east: number;
-  north: number;
-  zone: number;
-  hemisphere: 'N' | 'S';
-  ellipsoid: Ellipsoid;
-  
-  // Auxiliary
-  footprintLatDeg: number;
-  footprintLatRad: number;
-  centralMeridianDeg: number;
-  
-  // Final
-  latDecimal: number;
-  lonDecimal: number;
-  latDms: DMSCoordinate;
-  lonDms: DMSCoordinate;
-  kScale: number;
-  convergenceMeridianDeg: number;
-}
-
 export function calculateUtmToGeodesic(
   pointName: string,
   east: number,
@@ -478,7 +458,7 @@ export function calculateUtmToGeodesic(
 }
 
 /** Built-in Presets directly matching the UNSA PDF documents */
-export const UNSA_PRESETS = {
+export const UNSA_PRESETS: Record<string, PresetPoint> = {
   // Presets from PDF 1 & PDF 2 (Cálculo de Factores y Distancias)
   A8: {
     name: 'Punto A8 (PDF UNSA)',
