@@ -1,0 +1,6 @@
+{
+  "name": "Geodesia Satelital - Calculadora Geodésica y UTM",
+  "description": "Sistema de cálculo geodésico según metodología UNSA: transformación geodésicas a UTM, cálculo de factores de escala y elevación, distancias y generación de memorias de cálculo en PDF con desarrollo tipo LaTeX.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
