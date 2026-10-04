@@ -11,36 +11,36 @@ import { MathView } from './MathView';
 import { exportGeodesicToUtmPdf } from '../utils/pdfExport';
 
 export const GeodesicToUtmTab: React.FC = () => {
-  // Input states
-  const [pointName, setPointName] = useState('PB62');
-  const [cui, setCui] = useState('19863613');
+  // Input states - Grupo 3 por defecto
+  const [pointName, setPointName] = useState('Punto A7');
+  const [cui, setCui] = useState('Grupo 3');
   const [ellipsoidKey, setEllipsoidKey] = useState<'WGS84' | 'HAYFORD'>('WGS84');
   
-  // Latitude DMS
+  // Latitude DMS (Grupo 3: Punto A7: 13° 22' 25.95" S)
   const [latDeg, setLatDeg] = useState(13);
-  const [latMin, setLatMin] = useState(25);
-  const [latSec, setLatSec] = useState(8.87);
+  const [latMin, setLatMin] = useState(22);
+  const [latSec, setLatSec] = useState(25.95);
   const [latDir, setLatDir] = useState<'N' | 'S'>('S');
 
-  // Longitude DMS
-  const [lonDeg, setLonDeg] = useState(71);
+  // Longitude DMS (Grupo 3: Punto A7: 73° 56' 40.11" W)
+  const [lonDeg, setLonDeg] = useState(73);
   const [lonMin, setLonMin] = useState(56);
-  const [lonSec, setLonSec] = useState(22.56);
+  const [lonSec, setLonSec] = useState(40.11);
   const [lonDir, setLonDir] = useState<'E' | 'W'>('W');
 
-  // Optional forced zone (e.g. Zona 18 vs 19)
-  const [zoneMode, setZoneMode] = useState<'auto' | 'forced'>('auto');
-  const [forcedZone, setForcedZone] = useState<number>(19);
+  // Optional forced zone (Zona 18 para Grupo 3)
+  const [zoneMode, setZoneMode] = useState<'auto' | 'forced'>('forced');
+  const [forcedZone, setForcedZone] = useState<number>(18);
 
-  // Height (optional)
-  const [height, setHeight] = useState<string>('3820.242');
+  // Height (Grupo 3: Punto A7: 3650.305 m)
+  const [height, setHeight] = useState<string>('3650.305');
 
   const [copied, setCopied] = useState(false);
 
   // Load preset
   const loadPreset = (presetKey: keyof typeof UNSA_PRESETS) => {
     const p = UNSA_PRESETS[presetKey];
-    setPointName(p.name.split(' ')[1] || 'Punto');
+    setPointName(p.name);
     if (p.cui) setCui(p.cui);
     setLatDeg(p.latDms.degrees);
     setLatMin(p.latDms.minutes);
@@ -137,36 +137,43 @@ ${calculationResult.k_elevation ? `Kelevación: ${calculationResult.k_elevation.
 
           {/* Quick Presets */}
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-xs text-slate-400 mr-1 hidden md:inline">Cargar ejemplo PDF:</span>
+            <span className="text-xs text-slate-400 mr-1 hidden md:inline">Grupo 3:</span>
             <button
-              onClick={() => loadPreset('PB62_Z19')}
-              className="px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-md transition-colors cursor-pointer"
+              onClick={() => loadPreset('A7')}
+              className="px-2.5 py-1 text-xs bg-red-950/70 hover:bg-red-900 text-red-100 border border-red-700/80 rounded-md transition-colors cursor-pointer font-medium"
             >
-              PB62 (Zona 19)
+              Punto A7
             </button>
             <button
-              onClick={() => loadPreset('PB62_Z18')}
-              className="px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-md transition-colors cursor-pointer"
+              onClick={() => loadPreset('P7')}
+              className="px-2.5 py-1 text-xs bg-red-950/70 hover:bg-red-900 text-red-100 border border-red-700/80 rounded-md transition-colors cursor-pointer font-medium"
             >
-              PB62 (Zona 18)
-            </button>
-            <button
-              onClick={() => loadPreset('PB62_AREQUIPA')}
-              className="px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-md transition-colors cursor-pointer"
-            >
-              PB62 (Arequipa)
+              Punto P7
             </button>
             <button
               onClick={() => loadPreset('A8')}
-              className="px-2.5 py-1 text-xs bg-red-950/60 hover:bg-red-900/80 text-red-200 border border-red-800/80 rounded-md transition-colors cursor-pointer font-medium"
+              className="px-2.5 py-1 text-xs bg-red-950/70 hover:bg-red-900 text-red-100 border border-red-700/80 rounded-md transition-colors cursor-pointer font-medium"
             >
               Punto A8
             </button>
             <button
               onClick={() => loadPreset('P8')}
-              className="px-2.5 py-1 text-xs bg-red-950/60 hover:bg-red-900/80 text-red-200 border border-red-800/80 rounded-md transition-colors cursor-pointer font-medium"
+              className="px-2.5 py-1 text-xs bg-red-950/70 hover:bg-red-900 text-red-100 border border-red-700/80 rounded-md transition-colors cursor-pointer font-medium"
             >
               Punto P8
+            </button>
+            <span className="text-slate-600 hidden lg:inline">|</span>
+            <button
+              onClick={() => loadPreset('PB62_Z19')}
+              className="px-2 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-md transition-colors cursor-pointer"
+            >
+              PB62 Z19
+            </button>
+            <button
+              onClick={() => loadPreset('PB62_Z18')}
+              className="px-2 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-md transition-colors cursor-pointer"
+            >
+              PB62 Z18
             </button>
           </div>
         </div>

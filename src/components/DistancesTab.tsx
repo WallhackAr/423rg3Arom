@@ -11,26 +11,26 @@ import { exportDistancesPdf } from '../utils/pdfExport';
 import { PointFactorsResult } from '../types/geodesy';
 
 export const DistancesTab: React.FC = () => {
-  // Built-in points initialized to P8 and A7 (from PDF 2)
-  const [pointAName, setPointAName] = useState('Punto P8');
+  // Built-in points initialized to P8 and A7 (Grupo 3 por defecto)
+  const [pointAName, setPointAName] = useState('Punto P8 (Grupo 3)');
   const [latADeg, setLatADeg] = useState(13);
   const [latAMin, setLatAMin] = useState(22);
-  const [latASec, setLatASec] = useState(23.37);
-  const [eastA, setEastA] = useState(613755.292);
-  const [northA, setNorthA] = useState(8521356.277);
+  const [latASec, setLatASec] = useState(25.37);
+  const [eastA, setEastA] = useState(613815.195);
+  const [northA, setNorthA] = useState(8521294.574);
   const [hA, setHA] = useState(3820.242);
 
-  const [pointBName, setPointBName] = useState('Punto A7');
+  const [pointBName, setPointBName] = useState('Punto A7 (Grupo 3)');
   const [latBDeg, setLatBDeg] = useState(13);
   const [latBMin, setLatBMin] = useState(22);
-  const [latBSec, setLatBSec] = useState(23.95);
-  const [eastB, setEastB] = useState(614234.716);
-  const [northB, setNorthB] = useState(8521336.420);
+  const [latBSec, setLatBSec] = useState(25.95);
+  const [eastB, setEastB] = useState(614294.617);
+  const [northB, setNorthB] = useState(8521274.715);
   const [hB, setHB] = useState(3650.305);
 
   const [datumKey, setDatumKey] = useState<'WGS84' | 'HAYFORD'>('WGS84');
 
-  // Load predefined alignments from PDF UNSA
+  // Load predefined alignments from Grupo 3
   const loadPresetAlignment = (type: 'P8-A7' | 'P8-P7' | 'P8-A8') => {
     // P8 is always Point A
     const p8 = UNSA_PRESETS.P8;
@@ -38,8 +38,8 @@ export const DistancesTab: React.FC = () => {
     setLatADeg(p8.latDms.degrees);
     setLatAMin(p8.latDms.minutes);
     setLatASec(p8.latDms.seconds);
-    setEastA(p8.east ?? 613755.292);
-    setNorthA(p8.north ?? 8521356.277);
+    setEastA(p8.east ?? 613815.195);
+    setNorthA(p8.north ?? 8521294.574);
     setHA(p8.h ?? 3820.242);
 
     if (type === 'P8-A7') {
@@ -48,8 +48,8 @@ export const DistancesTab: React.FC = () => {
       setLatBDeg(a7.latDms.degrees);
       setLatBMin(a7.latDms.minutes);
       setLatBSec(a7.latDms.seconds);
-      setEastB(a7.east ?? 614234.716);
-      setNorthB(a7.north ?? 8521336.420);
+      setEastB(a7.east ?? 614294.617);
+      setNorthB(a7.north ?? 8521274.715);
       setHB(a7.h ?? 3650.305);
     } else if (type === 'P8-P7') {
       const p7 = UNSA_PRESETS.P7;
@@ -57,8 +57,8 @@ export const DistancesTab: React.FC = () => {
       setLatBDeg(p7.latDms.degrees);
       setLatBMin(p7.latDms.minutes);
       setLatBSec(p7.latDms.seconds);
-      setEastB(p7.east ?? 614327.373);
-      setNorthB(p7.north ?? 8521407.920);
+      setEastB(p7.east ?? 614387.274);
+      setNorthB(p7.north ?? 8521346.216);
       setHB(p7.h ?? 3612.033);
     } else if (type === 'P8-A8') {
       const a8 = UNSA_PRESETS.A8;
@@ -66,8 +66,8 @@ export const DistancesTab: React.FC = () => {
       setLatBDeg(a8.latDms.degrees);
       setLatBMin(a8.latDms.minutes);
       setLatBSec(a8.latDms.seconds);
-      setEastB(a8.east ?? 613495.358);
-      setNorthB(a8.north ?? 8520781.602);
+      setEastB(a8.east ?? 613555.259);
+      setNorthB(a8.north ?? 8520719.899);
       setHB(a8.h ?? 3848.100);
     }
   };

@@ -5,9 +5,10 @@ import { MathView } from './MathView';
 import { exportUtmToGeodesicPdf } from '../utils/pdfExport';
 
 export const UtmToGeodesicTab: React.FC = () => {
-  const [pointName, setPointName] = useState('Punto Inverso');
-  const [east, setEast] = useState<number>(613495.358);
-  const [north, setNorth] = useState<number>(8520781.602);
+  // Datos por defecto: Grupo 3 - Punto A7
+  const [pointName, setPointName] = useState('Punto A7 (Grupo 3)');
+  const [east, setEast] = useState<number>(614294.617);
+  const [north, setNorth] = useState<number>(8521274.715);
   const [zone, setZone] = useState<number>(18);
   const [hemisphere, setHemisphere] = useState<'N' | 'S'>('S');
   const [datumKey, setDatumKey] = useState<'WGS84' | 'HAYFORD'>('WGS84');
@@ -18,8 +19,8 @@ export const UtmToGeodesicTab: React.FC = () => {
   const loadPreset = (presetKey: keyof typeof UNSA_PRESETS) => {
     const p = UNSA_PRESETS[presetKey];
     setPointName(p.name);
-    setEast(p.east || 500000);
-    setNorth(p.north || 8500000);
+    setEast(p.east ?? 614294.617);
+    setNorth(p.north ?? 8521274.715);
     if (p.forcedZone) setZone(p.forcedZone);
   };
 
@@ -61,24 +62,30 @@ Factor de Escala: ${inverseResult.kScale.toFixed(10)}`;
           </div>
 
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-xs text-slate-400 mr-1 hidden sm:inline">Cargar punto UTM:</span>
+            <span className="text-xs text-slate-400 mr-1 hidden sm:inline">Grupo 3:</span>
+            <button
+              onClick={() => loadPreset('A7')}
+              className="px-2.5 py-1 text-xs bg-red-950/70 hover:bg-red-900 text-red-100 border border-red-700/80 rounded-md transition-colors cursor-pointer font-medium"
+            >
+              UTM A7
+            </button>
+            <button
+              onClick={() => loadPreset('P7')}
+              className="px-2.5 py-1 text-xs bg-red-950/70 hover:bg-red-900 text-red-100 border border-red-700/80 rounded-md transition-colors cursor-pointer font-medium"
+            >
+              UTM P7
+            </button>
             <button
               onClick={() => loadPreset('A8')}
-              className="px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-md transition-colors cursor-pointer"
+              className="px-2.5 py-1 text-xs bg-red-950/70 hover:bg-red-900 text-red-100 border border-red-700/80 rounded-md transition-colors cursor-pointer font-medium"
             >
               UTM A8
             </button>
             <button
               onClick={() => loadPreset('P8')}
-              className="px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-md transition-colors cursor-pointer"
+              className="px-2.5 py-1 text-xs bg-red-950/70 hover:bg-red-900 text-red-100 border border-red-700/80 rounded-md transition-colors cursor-pointer font-medium"
             >
               UTM P8
-            </button>
-            <button
-              onClick={() => loadPreset('A7')}
-              className="px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-md transition-colors cursor-pointer"
-            >
-              UTM A7
             </button>
           </div>
         </div>

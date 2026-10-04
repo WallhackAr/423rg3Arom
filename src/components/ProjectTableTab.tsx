@@ -3,6 +3,7 @@ import { Download, Plus, Trash2, RotateCcw, Compass, ArrowRight, Layers } from '
 import {
   calculatePointFactors,
   calculateAlignmentDistance,
+  calculateGeodesicToUtm,
   UNSA_PRESETS,
 } from '../utils/geodesyMath';
 import { PointFactorsResult, DistanceAlignmentResult } from '../types/geodesy';
@@ -19,39 +20,39 @@ interface SurveyPoint {
 }
 
 export const ProjectTableTab: React.FC = () => {
-  // Initial points from UNSA PDF 1 & 2
+  // Puntos por defecto: Grupo 3 (UNSA)
   const [points, setPoints] = useState<SurveyPoint[]>([
-    {
-      id: 'A8',
-      name: 'Punto A8',
-      latDecimal: -13.37836389,
-      east: 613495.358,
-      north: 8520781.602,
-      h: 3848.100,
-    },
-    {
-      id: 'P8',
-      name: 'Punto P8',
-      latDecimal: -13.37315833,
-      east: 613755.292,
-      north: 8521356.277,
-      h: 3820.242,
-    },
     {
       id: 'A7',
       name: 'Punto A7',
-      latDecimal: -13.37331944,
-      east: 614234.716,
-      north: 8521336.420,
+      latDecimal: -13.373875,
+      east: 614294.617,
+      north: 8521274.715,
       h: 3650.305,
     },
     {
       id: 'P7',
       name: 'Punto P7',
-      latDecimal: -13.37266944,
-      east: 614327.373,
-      north: 8521407.920,
+      latDecimal: -13.373225,
+      east: 614387.274,
+      north: 8521346.216,
       h: 3612.033,
+    },
+    {
+      id: 'A8',
+      name: 'Punto A8',
+      latDecimal: -13.37891944,
+      east: 613555.259,
+      north: 8520719.899,
+      h: 3848.100,
+    },
+    {
+      id: 'P8',
+      name: 'Punto P8',
+      latDecimal: -13.37371389,
+      east: 613815.195,
+      north: 8521294.574,
+      h: 3820.242,
     },
   ]);
 
@@ -87,14 +88,20 @@ export const ProjectTableTab: React.FC = () => {
   // Add Point via reusable form
   const handleAddPoint = (val: GeodeticFormValues) => {
     const newId = `P_${Date.now()}`;
-    // Approximate UTM East & North if not provided
-    // For general points, using average UTM or standard formula
+    const utm = calculateGeodesicToUtm({
+      pointName: val.pointName,
+      latDms: val.latDms,
+      lonDms: val.lonDms,
+      ellipsoidKey: datumKey,
+      forcedZone: 18,
+      h: val.altitude,
+    });
     const newPt: SurveyPoint = {
       id: newId,
       name: val.pointName || `Vértice ${points.length + 1}`,
       latDecimal: val.latDecimal,
-      east: 613500 + Math.random() * 800,
-      north: 8521000 + Math.random() * 800,
+      east: Number(utm.E_final.toFixed(3)),
+      north: Number(utm.N_final.toFixed(3)),
       h: val.altitude,
     };
     setPoints([...points, newPt]);
@@ -112,36 +119,36 @@ export const ProjectTableTab: React.FC = () => {
   const handleResetToPdf = () => {
     setPoints([
       {
-        id: 'A8',
-        name: 'Punto A8',
-        latDecimal: -13.37836389,
-        east: 613495.358,
-        north: 8520781.602,
-        h: 3848.100,
-      },
-      {
-        id: 'P8',
-        name: 'Punto P8',
-        latDecimal: -13.37315833,
-        east: 613755.292,
-        north: 8521356.277,
-        h: 3820.242,
-      },
-      {
         id: 'A7',
         name: 'Punto A7',
-        latDecimal: -13.37331944,
-        east: 614234.716,
-        north: 8521336.420,
+        latDecimal: -13.373875,
+        east: 614294.617,
+        north: 8521274.715,
         h: 3650.305,
       },
       {
         id: 'P7',
         name: 'Punto P7',
-        latDecimal: -13.37266944,
-        east: 614327.373,
-        north: 8521407.920,
+        latDecimal: -13.373225,
+        east: 614387.274,
+        north: 8521346.216,
         h: 3612.033,
+      },
+      {
+        id: 'A8',
+        name: 'Punto A8',
+        latDecimal: -13.37891944,
+        east: 613555.259,
+        north: 8520719.899,
+        h: 3848.100,
+      },
+      {
+        id: 'P8',
+        name: 'Punto P8',
+        latDecimal: -13.37371389,
+        east: 613815.195,
+        north: 8521294.574,
+        h: 3820.242,
       },
     ]);
   };

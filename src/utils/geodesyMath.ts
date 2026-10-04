@@ -457,48 +457,48 @@ export function calculateUtmToGeodesic(
   };
 }
 
-/** Built-in Presets directly matching the UNSA PDF documents */
+/** Built-in Presets directly matching the UNSA PDF documents (Grupo 3 por defecto) */
 export const UNSA_PRESETS: Record<string, PresetPoint> = {
-  // Presets from PDF 1 & PDF 2 (Cálculo de Factores y Distancias)
-  A8: {
-    name: 'Punto A8 (PDF UNSA)',
-    latDms: { degrees: 13, minutes: 22, seconds: 42.11, direction: 'S' as const },
-    lonDms: { degrees: 73, minutes: 57, seconds: 6.61, direction: 'W' as const },
-    east: 613495.358,
-    north: 8520781.602,
-    h: 3848.100,
-    forcedZone: 18,
-    cui: 'UNSA-A8',
-  },
-  P8: {
-    name: 'Punto P8 (PDF UNSA)',
-    latDms: { degrees: 13, minutes: 22, seconds: 23.37, direction: 'S' as const },
-    lonDms: { degrees: 73, minutes: 56, seconds: 58.05, direction: 'W' as const },
-    east: 613755.292,
-    north: 8521356.277,
-    h: 3820.242,
-    forcedZone: 18,
-    cui: 'UNSA-P8',
-  },
+  // Presets Grupo 3
   A7: {
-    name: 'Punto A7 (PDF UNSA)',
-    latDms: { degrees: 13, minutes: 22, seconds: 23.95, direction: 'S' as const },
-    lonDms: { degrees: 73, minutes: 56, seconds: 42.11, direction: 'W' as const },
-    east: 614234.716,
-    north: 8521336.420,
+    name: 'Punto A7 (Grupo 3)',
+    latDms: { degrees: 13, minutes: 22, seconds: 25.95, direction: 'S' as const },
+    lonDms: { degrees: 73, minutes: 56, seconds: 40.11, direction: 'W' as const },
+    east: 614294.617,
+    north: 8521274.715,
     h: 3650.305,
     forcedZone: 18,
-    cui: 'UNSA-A7',
+    cui: 'Grupo 3',
   },
   P7: {
-    name: 'Punto P7 (PDF UNSA)',
-    latDms: { degrees: 13, minutes: 22, seconds: 21.61, direction: 'S' as const },
-    lonDms: { degrees: 73, minutes: 56, seconds: 39.04, direction: 'W' as const },
-    east: 614327.373,
-    north: 8521407.920,
+    name: 'Punto P7 (Grupo 3)',
+    latDms: { degrees: 13, minutes: 22, seconds: 23.61, direction: 'S' as const },
+    lonDms: { degrees: 73, minutes: 56, seconds: 37.04, direction: 'W' as const },
+    east: 614387.274,
+    north: 8521346.216,
     h: 3612.033,
     forcedZone: 18,
-    cui: 'UNSA-P7',
+    cui: 'Grupo 3',
+  },
+  A8: {
+    name: 'Punto A8 (Grupo 3)',
+    latDms: { degrees: 13, minutes: 22, seconds: 44.11, direction: 'S' as const },
+    lonDms: { degrees: 73, minutes: 57, seconds: 4.61, direction: 'W' as const },
+    east: 613555.259,
+    north: 8520719.899,
+    h: 3848.100,
+    forcedZone: 18,
+    cui: 'Grupo 3',
+  },
+  P8: {
+    name: 'Punto P8 (Grupo 3)',
+    latDms: { degrees: 13, minutes: 22, seconds: 25.37, direction: 'S' as const },
+    lonDms: { degrees: 73, minutes: 56, seconds: 56.05, direction: 'W' as const },
+    east: 613815.195,
+    north: 8521294.574,
+    h: 3820.242,
+    forcedZone: 18,
+    cui: 'Grupo 3',
   },
   // Presets from PB62 (PDF 5, 6, 7)
   PB62_Z19: {

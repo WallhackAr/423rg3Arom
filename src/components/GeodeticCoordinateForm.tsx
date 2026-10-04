@@ -46,22 +46,22 @@ export const GeodeticCoordinateForm: React.FC<GeodeticCoordinateFormProps> = ({
   const [inputMode, setInputMode] = useState<'dms' | 'decimal'>('dms');
 
   // Point Name
-  const [pointName, setPointName] = useState(initialValues?.pointName || 'Punto 1');
+  const [pointName, setPointName] = useState(initialValues?.pointName || 'Punto A7');
 
-  // Latitude DMS
+  // Latitude DMS (Grupo 3: Punto A7: 13° 22' 25.95" S)
   const [latDeg, setLatDeg] = useState<number>(initialValues?.latDms?.degrees ?? 13);
   const [latMin, setLatMin] = useState<number>(initialValues?.latDms?.minutes ?? 22);
-  const [latSec, setLatSec] = useState<number>(initialValues?.latDms?.seconds ?? 42.11);
+  const [latSec, setLatSec] = useState<number>(initialValues?.latDms?.seconds ?? 25.95);
   const [latDir, setLatDir] = useState<'N' | 'S'>(
     initialValues?.latDms?.direction === 'N' || initialValues?.latDms?.direction === 'S'
       ? initialValues.latDms.direction
       : 'S'
   );
 
-  // Longitude DMS
+  // Longitude DMS (Grupo 3: Punto A7: 73° 56' 40.11" W)
   const [lonDeg, setLonDeg] = useState<number>(initialValues?.lonDms?.degrees ?? 73);
-  const [lonMin, setLonMin] = useState<number>(initialValues?.lonDms?.minutes ?? 57);
-  const [lonSec, setLonSec] = useState<number>(initialValues?.lonDms?.seconds ?? 6.61);
+  const [lonMin, setLonMin] = useState<number>(initialValues?.lonDms?.minutes ?? 56);
+  const [lonSec, setLonSec] = useState<number>(initialValues?.lonDms?.seconds ?? 40.11);
   const [lonDir, setLonDir] = useState<'E' | 'W'>(
     initialValues?.lonDms?.direction === 'E' || initialValues?.lonDms?.direction === 'W'
       ? initialValues.lonDms.direction
@@ -70,15 +70,15 @@ export const GeodeticCoordinateForm: React.FC<GeodeticCoordinateFormProps> = ({
 
   // Decimal states for direct decimal entry
   const [latDecInput, setLatDecInput] = useState<string>(
-    initialValues?.latDecimal !== undefined ? initialValues.latDecimal.toString() : '-13.37836389'
+    initialValues?.latDecimal !== undefined ? initialValues.latDecimal.toString() : '-13.37387500'
   );
   const [lonDecInput, setLonDecInput] = useState<string>(
-    initialValues?.lonDecimal !== undefined ? initialValues.lonDecimal.toString() : '-73.95183611'
+    initialValues?.lonDecimal !== undefined ? initialValues.lonDecimal.toString() : '-73.94447500'
   );
 
-  // Altitude
+  // Altitude (Grupo 3: 3650.305 m)
   const [altitude, setAltitude] = useState<string>(
-    initialValues?.altitude !== undefined ? initialValues.altitude.toString() : '3848.100'
+    initialValues?.altitude !== undefined ? initialValues.altitude.toString() : '3650.305'
   );
 
   // Validation errors
@@ -251,17 +251,18 @@ export const GeodeticCoordinateForm: React.FC<GeodeticCoordinateFormProps> = ({
   };
 
   const handleReset = () => {
+    setPointName('Punto A7');
     setLatDeg(13);
     setLatMin(22);
-    setLatSec(42.11);
+    setLatSec(25.95);
     setLatDir('S');
     setLonDeg(73);
-    setLonMin(57);
-    setLonSec(6.61);
+    setLonMin(56);
+    setLonSec(40.11);
     setLonDir('W');
-    setAltitude('3848.100');
-    setLatDecInput('-13.37836389');
-    setLonDecInput('-73.95183611');
+    setAltitude('3650.305');
+    setLatDecInput('-13.37387500');
+    setLonDecInput('-73.94447500');
     setErrors({});
   };
 

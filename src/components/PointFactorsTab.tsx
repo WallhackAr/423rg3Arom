@@ -6,19 +6,20 @@ import { MathView } from './MathView';
 import { exportPointFactorsPdf } from '../utils/pdfExport';
 
 export const PointFactorsTab: React.FC = () => {
-  const [pointName, setPointName] = useState('Punto A8');
+  // Datos por defecto: Grupo 3 - Punto A7
+  const [pointName, setPointName] = useState('Punto A7 (Grupo 3)');
   const [datumKey, setDatumKey] = useState<'WGS84' | 'HAYFORD'>('WGS84');
 
-  // Latitude DMS
+  // Latitude DMS (13° 22' 25.95" S)
   const [latDeg, setLatDeg] = useState(13);
   const [latMin, setLatMin] = useState(22);
-  const [latSec, setLatSec] = useState(42.11);
+  const [latSec, setLatSec] = useState(25.95);
   const [latDir, setLatDir] = useState<'N' | 'S'>('S');
 
-  // UTM East and North
-  const [east, setEast] = useState<number>(613495.358);
-  const [north, setNorth] = useState<number>(8520781.602);
-  const [h, setH] = useState<number>(3848.100);
+  // UTM East, North and h
+  const [east, setEast] = useState<number>(614294.617);
+  const [north, setNorth] = useState<number>(8521274.715);
+  const [h, setH] = useState<number>(3650.305);
 
   const [copied, setCopied] = useState(false);
 
@@ -30,8 +31,8 @@ export const PointFactorsTab: React.FC = () => {
     setLatMin(p.latDms.minutes);
     setLatSec(p.latDms.seconds);
     setLatDir(p.latDms.direction as 'N' | 'S');
-    setEast(p.east || 500000);
-    setNorth(p.north || 8000000);
+    setEast(p.east ?? 614294.617);
+    setNorth(p.north ?? 8521274.715);
     if (p.h !== undefined) setH(p.h);
   };
 
