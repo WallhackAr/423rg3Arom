@@ -16,6 +16,7 @@ export const Header: React.FC<HeaderProps> = ({
     { id: 'geodesic_to_utm', label: 'Geodésicas a UTM' },
     { id: 'point_factors', label: 'Factores en Punto' },
     { id: 'distances', label: 'Cálculo de Distancias' },
+    { id: 'directions', label: 'Direcciones y Azimuts' },
     { id: 'utm_to_geodesic', label: 'UTM a Geodésicas' },
     { id: 'project_table', label: 'Poligonal / Matriz' },
     { id: 'theory', label: 'Visualizador y Teoría' },

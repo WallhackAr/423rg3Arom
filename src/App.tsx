@@ -8,6 +8,7 @@ import { Header } from './components/Header';
 import { GeodesicToUtmTab } from './components/GeodesicToUtmTab';
 import { PointFactorsTab } from './components/PointFactorsTab';
 import { DistancesTab } from './components/DistancesTab';
+import { DirectionsTab } from './components/DirectionsTab';
 import { UtmToGeodesicTab } from './components/UtmToGeodesicTab';
 import { ProjectTableTab } from './components/ProjectTableTab';
 import { TheoryGuideTab } from './components/TheoryGuideTab';
@@ -32,6 +33,7 @@ export default function App() {
         {activeTab === 'geodesic_to_utm' && <GeodesicToUtmTab />}
         {activeTab === 'point_factors' && <PointFactorsTab />}
         {activeTab === 'distances' && <DistancesTab />}
+        {activeTab === 'directions' && <DirectionsTab />}
         {activeTab === 'utm_to_geodesic' && <UtmToGeodesicTab />}
         {activeTab === 'project_table' && <ProjectTableTab />}
         {activeTab === 'theory' && <TheoryGuideTab />}
@@ -84,6 +86,14 @@ export default function App() {
                   4. Reducción de Distancias entre Alineamientos
                 </span>
                 <MathView block math="L_C = \sqrt{(\Delta E)^2 + (\Delta N)^2} \quad ; \quad L_0 = \frac{L_C}{K_\text{escala, m}} \quad ; \quad L_T = \frac{L_0}{K_\text{elev, m}} = \frac{L_C}{K_\text{comb, m}}" />
+              </div>
+
+              <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 space-y-1">
+                <span className="font-semibold text-red-400 block font-mono">
+                  5. Cálculo de Direcciones, Curvatura y Azimut Geográfico (UNSA)
+                </span>
+                <MathView block math="(T - t)_{A\to B} = -\Delta N \cdot (2x_1 + x_2) \cdot P \cdot 6.8755 \times 10^{-8} \quad [ \text{segundos} ]" />
+                <MathView block math="T = t + (T - t) \quad ; \quad Z_G = T + \gamma" />
               </div>
             </div>
 

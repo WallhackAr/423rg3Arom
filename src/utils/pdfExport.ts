@@ -4,6 +4,8 @@ import {
   PointFactorsResult,
   DistanceAlignmentResult,
   UtmToGeodesicResult,
+  DirectionCalculationResult,
+  MeridianConvergenceResult,
 } from '../types/geodesy';
 
 /** Helper to draw a university header */
@@ -582,3 +584,163 @@ export function exportUtmToGeodesicPdf(result: UtmToGeodesicResult) {
   drawFooter(doc);
   doc.save(`Inversa_UTM_${result.pointName}.pdf`);
 }
+
+/** 5. EXPORT PDF: Cálculo de Direcciones y Azimuts (t, T, ZG) */
+export function exportDirectionsPdf(result: DirectionCalculationResult) {
+  const doc = new jsPDF();
+  let y = drawHeader(
+    doc,
+    'CÁLCULO DE DIRECCIONES Y AZIMUTS GEODÉSICOS',
+    `Alineamiento: ${result.lineName} (${result.pointAName} -> ${result.pointBName}) · Datum: ${result.datumName}`,
+    'UNSA'
+  );
+
+  // Cuadro Resumen de Azimuts y Direcciones
+  y = drawTable(
+    doc,
+    y,
+    '1. CUADRO RESUMEN DE DIRECCIONES Y AZIMUTS',
+    ['Elemento de Dirección', 'Símbolo / Fórmula', 'Valor Sexagesimal', 'Valor Decimal'],
+    [
+      ['Rumbo Topográfico', 'Rumbo = arctan(|ΔE/ΔN|)', result.bearingDmsStr, `${result.bearingDeg.toFixed(6)}°`],
+      ['Azimut Plano de Cuadrícula', 't', result.azimuthPlaneDmsStr, `${result.azimuthPlaneDeg.toFixed(6)}°`],
+      ['Corrección por Curvatura', '(T - t)', result.curvatureCorrectionDmsStr, `${result.curvatureCorrectionSec.toFixed(4)}" (${result.curvatureCorrectionDeg.toFixed(7)}°)`],
+      ['Azimut Geodésico Proyectado', 'T = t + (T - t)', result.azimuthGeodeticProjectedDmsStr, `${result.azimuthGeodeticProjectedDeg.toFixed(6)}°`],
+      ['Convergencia de Meridianos en A', 'γ (Estación A)', result.convergenceA.gammaDmsStr, `${result.convergenceA.gammaDeg.toFixed(7)}°`],
+      ['Azimut Geográfico o Verdadero', 'ZG = T + γ', result.azimuthGeographicDmsStr, `${result.azimuthGeographicDeg.toFixed(6)}°`],
+      ['Distancia Plana entre Puntos', 'D = √(ΔE² + ΔN²)', `${result.distance.toFixed(3)} m`, `${result.distance.toFixed(3)} m`],
+    ],
+    [50, 48, 48, 38]
+  );
+
+  // Coordenadas de los Puntos Extremos
+  y = drawTable(
+    doc,
+    y,
+    '2. COORDENADAS DE LOS PUNTOS DE LA LÍNEA',
+    ['Punto', 'Este UTM (m)', 'Norte UTM (m)', 'Latitud (φ)', 'Longitud (λ)'],
+    [
+      [
+        result.pointAName,
+        result.eastA.toLocaleString('en-US', { minimumFractionDigits: 3 }),
+        result.northA.toLocaleString('en-US', { minimumFractionDigits: 3 }),
+        `${result.latA_Decimal.toFixed(8)}°`,
+        `${result.lonA_Decimal.toFixed(8)}°`,
+      ],
+      [
+        result.pointBName,
+        result.eastB.toLocaleString('en-US', { minimumFractionDigits: 3 }),
+        result.northB.toLocaleString('en-US', { minimumFractionDigits: 3 }),
+        `${result.latB_Decimal.toFixed(8)}°`,
+        `${result.latB_Decimal.toFixed(8)}°`,
+      ],
+    ],
+    [30, 40, 40, 37, 37]
+  );
+
+  // Procedimiento Detallado
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10.5);
+  doc.setTextColor(15, 23, 42);
+  doc.text('3. PROCEDIMIENTO DETALLADO DE CÁLCULO (MÉTODO OFICIAL UNSA)', 14, y);
+  y += 5;
+
+  const steps = [
+    {
+      title: 'A. Azimut Plano de Cuadrícula (t)',
+      formula: 'ΔE = EB - EA  ;  ΔN = NB - NA  ;  t = arctan(ΔE / ΔN)',
+      subst: `ΔE = ${result.deltaE.toFixed(3)} m  |  ΔN = ${result.deltaN.toFixed(3)} m  |  Cuadrante: ${result.bearingQuadrant}`,
+      res: `Azimut Plano t = ${result.azimuthPlaneDmsStr} (${result.azimuthPlaneDeg.toFixed(6)}°)`,
+    },
+    {
+      title: 'B. Corrección por Curvatura (T - t)',
+      formula: '(T - t)_{A->B} = -ΔN · (2·x1 + x2) · P · 6.8755 · 10⁻⁸  [segundos de arco]',
+      subst: `x1 = |500000 - ${result.eastA.toFixed(3)}| = ${result.x1.toFixed(3)} m  ;  x2 = |500000 - ${result.eastB.toFixed(3)}| = ${result.x2.toFixed(3)} m\nP = ${result.P_factorA.toFixed(11)}  ;  ΔN = ${result.deltaN_val.toFixed(3)} m`,
+      res: `(T - t) = ${result.curvatureCorrectionDmsStr} (${result.curvatureCorrectionSec.toFixed(4)}")`,
+    },
+    {
+      title: 'C. Azimut Geodésico Proyectado (T)',
+      formula: 'T = t + (T - t)',
+      subst: `T = ${result.azimuthPlaneDmsStr} + (${result.curvatureCorrectionDmsStr})`,
+      res: `T = ${result.azimuthGeodeticProjectedDmsStr} (${result.azimuthGeodeticProjectedDeg.toFixed(6)}°)`,
+    },
+    {
+      title: 'D. Convergencia de Meridianos en Estación A (γ)',
+      formula: 'tan γ = L·t·cosφ + L³·t·[ (1 + t² + 3η² + 2η⁴) / 3 ]·cos³φ',
+      subst: `φ = ${result.latA_Decimal.toFixed(6)}°  |  Δλ = ${result.convergenceA.deltaLonDeg.toFixed(6)}° (${result.convergenceA.deltaLonRad.toFixed(9)} rad)\n${result.convergenceA.quadrantSignRule}`,
+      res: `γ = ${result.convergenceA.gammaDmsStr} (${result.convergenceA.gammaDeg.toFixed(7)}°)`,
+    },
+    {
+      title: 'E. Azimut Geográfico o Verdadero (ZG)',
+      formula: 'ZG = T + γ',
+      subst: `ZG = ${result.azimuthGeodeticProjectedDmsStr} + (${result.convergenceA.gammaDmsStr})`,
+      res: `ZG = ${result.azimuthGeographicDmsStr} (${result.azimuthGeographicDeg.toFixed(6)}°)`,
+    },
+  ];
+
+  steps.forEach((st) => {
+    if (y > 248) {
+      doc.addPage();
+      y = 20;
+    }
+
+    doc.setFillColor(248, 250, 252);
+    doc.setDrawColor(203, 213, 225);
+    doc.rect(14, y, doc.internal.pageSize.getWidth() - 28, 24, 'FD');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(15, 23, 42);
+    doc.text(st.title, 18, y + 4.5);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(71, 85, 105);
+    doc.text(`Fórmula: ${st.formula}`, 18, y + 9.5);
+    doc.text(`Sustitución: ${st.subst}`, 18, y + 14.5);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(3, 105, 161);
+    doc.text(`Resultado: ${st.res}`, 18, y + 20);
+
+    y += 27;
+  });
+
+  drawFooter(doc);
+  doc.save(`Direcciones_${result.lineName}.pdf`);
+}
+
+/** 6. EXPORT PDF: Convergencia de Meridianos (γ) */
+export function exportConvergencePdf(result: MeridianConvergenceResult) {
+  const doc = new jsPDF();
+  let y = drawHeader(
+    doc,
+    'CONVERGENCIA DE MERIDIANOS (γ)',
+    `Punto: ${result.pointName} · Zona ${result.zone} (${result.hemisphere})`,
+    'UNSA'
+  );
+
+  y = drawTable(
+    doc,
+    y,
+    '1. CUADRO RESUMEN DE CONVERGENCIA DE MERIDIANOS',
+    ['Parámetro', 'Valor Simbólico', 'Resultado'],
+    [
+      ['Punto de Estación', 'Pto', result.pointName],
+      ['Coordenada Este', 'E', `${result.east.toLocaleString('en-US', { minimumFractionDigits: 3 })} m`],
+      ['Coordenada Norte', 'N', `${result.north.toLocaleString('en-US', { minimumFractionDigits: 3 })} m`],
+      ['Zona y Hemisferio', 'UTM', `Zona ${result.zone} (${result.hemisphere === 'N' ? 'Norte' : 'Sur'})`],
+      ['Meridiano Central', 'λo', `${result.centralMeridianDeg}°`],
+      ['Latitud Geodésica', 'φ', `${result.latDecimal.toFixed(8)}°`],
+      ['Longitud Geodésica', 'λ', `${result.lonDecimal.toFixed(8)}°`],
+      ['Diferencia de Longitud', 'Δλ = λ - λo', `${result.deltaLonDeg.toFixed(6)}° (${result.deltaLonRad.toFixed(9)} rad)`],
+      ['Regla de Signo por Cuadrante', 'Slide 6 UNSA', result.quadrantSignRule],
+      ['Convergencia de Meridianos (γ)', 'γ = arctan(tan γ)', `${result.gammaDmsStr} (${result.gammaDeg.toFixed(7)}°)`],
+    ],
+    [55, 45, 84]
+  );
+
+  drawFooter(doc);
+  doc.save(`Convergencia_${result.pointName}.pdf`);
+}
+

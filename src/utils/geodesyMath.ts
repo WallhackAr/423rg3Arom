@@ -13,6 +13,8 @@ import {
   DistanceAlignmentResult,
   UtmToGeodesicResult,
   PresetPoint,
+  MeridianConvergenceResult,
+  DirectionCalculationResult,
 } from '../types/geodesy';
 
 /** Convert DMS to Decimal Degrees */
@@ -523,3 +525,232 @@ export const UNSA_PRESETS: Record<string, PresetPoint> = {
     cui: '19863613',
   },
 };
+
+/** Format any decimal angle in degrees into clean ±DD° MM' SS.SSSS" string */
+export function formatAngleDms(
+  angleDeg: number,
+  showSign: boolean = true,
+  decimals: number = 4
+): string {
+  const isNegative = angleDeg < 0;
+  const absVal = Math.abs(angleDeg);
+  const degrees = Math.floor(absVal);
+  const minutesFull = (absVal - degrees) * 60;
+  const minutes = Math.floor(minutesFull);
+  const seconds = (minutesFull - minutes) * 60;
+
+  const signStr = showSign ? (isNegative ? '- ' : '+ ') : (isNegative ? '-' : '');
+  return `${signStr}${degrees}° ${minutes}' ${seconds.toFixed(decimals)}"`;
+}
+
+/** Format azimuth in standard [0, 360) format DD° MM' SS.SS" */
+export function formatAzimuthDms(azimuthDeg: number, decimals: number = 2): string {
+  let normalized = azimuthDeg % 360;
+  if (normalized < 0) normalized += 360;
+  const degrees = Math.floor(normalized);
+  const minutesFull = (normalized - degrees) * 60;
+  const minutes = Math.floor(minutesFull);
+  const seconds = (minutesFull - minutes) * 60;
+  return `${degrees}° ${minutes}' ${seconds.toFixed(decimals)}"`;
+}
+
+/** Calculate Meridian Convergence at a Point (UNSA Formula - Slide 7) */
+export function calculateMeridianConvergence(
+  pointName: string,
+  east: number,
+  north: number,
+  zone: number,
+  hemisphere: 'N' | 'S',
+  datumKey: 'WGS84' | 'HAYFORD' = 'WGS84'
+): MeridianConvergenceResult {
+  const geo = calculateUtmToGeodesic(pointName, east, north, zone, hemisphere, datumKey);
+  const phi = (geo.latDecimal * Math.PI) / 180;
+  const lambda = (geo.lonDecimal * Math.PI) / 180;
+  const centralMeridianDeg = zone * 6 - 183;
+  const lambda0 = (centralMeridianDeg * Math.PI) / 180;
+
+  const deltaLonDeg = geo.lonDecimal - centralMeridianDeg;
+  const deltaLonRad = lambda - lambda0;
+
+  const ellipsoid = geo.ellipsoid;
+  const cosPhi = Math.cos(phi);
+  const t = Math.tan(phi);
+  const eta2 = ellipsoid.ePrime2 * Math.pow(cosPhi, 2);
+  const eta4 = Math.pow(eta2, 2);
+
+  // L = Signo(E - 500000) * [ |λ| - |λo| ]
+  // In radians: L = Δλ
+  const L_sign = east >= 500000 ? 1 : -1;
+  const termL = deltaLonRad * cosPhi;
+
+  // Formula Slide 7:
+  // tan(γ) = L * t * cos(φ) + L³ * t * [ (1 + t² + 3η² + 2η⁴) / 3 ] * cos³(φ)
+  // where L is (λ - λ0)
+  const tanGamma =
+    termL * t +
+    Math.pow(termL, 3) * t * ((1 + Math.pow(t, 2) + 3 * eta2 + 2 * eta4) / 3);
+
+  const gammaRad = Math.atan(tanGamma);
+  const gammaDeg = (gammaRad * 180) / Math.PI;
+
+  const isNorth = hemisphere === 'N';
+  const isEastOfMC = east >= 500000;
+  const quadrantSignRule = isNorth
+    ? isEastOfMC
+      ? 'Hemisferio Norte / Este de MC: Signo (+)'
+      : 'Hemisferio Norte / Oeste de MC: Signo (-)'
+    : isEastOfMC
+    ? 'Hemisferio Sur / Este de MC: Signo (-)'
+    : 'Hemisferio Sur / Oeste de MC: Signo (+)';
+
+  return {
+    pointName,
+    east,
+    north,
+    zone,
+    hemisphere,
+    latDecimal: geo.latDecimal,
+    lonDecimal: geo.lonDecimal,
+    latDms: geo.latDms,
+    lonDms: geo.lonDms,
+    centralMeridianDeg,
+    deltaLonDeg,
+    deltaLonRad,
+    t,
+    cosPhi,
+    eta2,
+    eta4,
+    L_sign,
+    tanGamma,
+    gammaRad,
+    gammaDeg,
+    gammaDmsStr: formatAngleDms(gammaDeg, true, 4),
+    quadrantSignRule,
+  };
+}
+
+/** Calculate Directions of a Line AB (Azimuths t, T, ZG and Curvature Correction) */
+export function calculateLineDirections(
+  lineName: string,
+  pointAName: string,
+  pointBName: string,
+  eastA: number,
+  northA: number,
+  eastB: number,
+  northB: number,
+  zone: number,
+  hemisphere: 'N' | 'S',
+  datumKey: 'WGS84' | 'HAYFORD' = 'WGS84'
+): DirectionCalculationResult {
+  const geoA = calculateUtmToGeodesic(pointAName, eastA, northA, zone, hemisphere, datumKey);
+  const geoB = calculateUtmToGeodesic(pointBName, eastB, northB, zone, hemisphere, datumKey);
+  const ellipsoid = geoA.ellipsoid;
+
+  // Step 1: Differences & Plane Azimuth (t)
+  const deltaE = eastB - eastA;
+  const deltaN = northB - northA;
+  const distance = Math.sqrt(Math.pow(deltaE, 2) + Math.pow(deltaN, 2));
+
+  // Topographic Bearing and Quadrant
+  const absDeltaE = Math.abs(deltaE);
+  const absDeltaN = Math.abs(deltaN);
+  const bearingRad = Math.atan2(absDeltaE, absDeltaN);
+  const bearingDeg = (bearingRad * 180) / Math.PI;
+
+  let quadrant = 'NE';
+  let azimuthPlaneDeg = 0;
+
+  if (deltaE >= 0 && deltaN >= 0) {
+    quadrant = 'NE';
+    azimuthPlaneDeg = bearingDeg;
+  } else if (deltaE >= 0 && deltaN < 0) {
+    quadrant = 'SE';
+    azimuthPlaneDeg = 180 - bearingDeg;
+  } else if (deltaE < 0 && deltaN < 0) {
+    quadrant = 'SW';
+    azimuthPlaneDeg = 180 + bearingDeg;
+  } else {
+    quadrant = 'NW';
+    azimuthPlaneDeg = 360 - bearingDeg;
+  }
+
+  const bearingDmsStr = `${quadrant.charAt(0)} ${formatAzimuthDms(bearingDeg, 2)} ${quadrant.charAt(1)}`;
+  const azimuthPlaneDmsStr = formatAzimuthDms(azimuthPlaneDeg, 2);
+
+  // Step 2: Curvature Correction (T - t) (Slide 12)
+  // (T - t)_{A->B} = -ΔN * (2*x1 + x2) * P * 6.8755 * 10^-8  (en segundos sexagesimales)
+  const x1 = Math.abs(500000 - eastA);
+  const x2 = Math.abs(500000 - eastB);
+
+  const latARad = (geoA.latDecimal * Math.PI) / 180;
+  const cosLatA = Math.cos(latARad);
+  const sinLatA = Math.sin(latARad);
+
+  // Radio de la gran normal N en A
+  const N_radioA = ellipsoid.a / Math.sqrt(1 - ellipsoid.e2 * Math.pow(sinLatA, 2));
+
+  // P factor en A
+  const twoN2K02 = 2 * Math.pow(N_radioA, 2) * Math.pow(ellipsoid.k0, 2);
+  const onePlusEprime2Cos2Phi = 1 + ellipsoid.ePrime2 * Math.pow(cosLatA, 2);
+  const P_factorA = (onePlusEprime2Cos2Phi / twoN2K02) * 1e12;
+
+  // Curvature correction in arcseconds
+  const curvatureCorrectionSec =
+    -deltaN * (2 * x1 + x2) * P_factorA * 6.8755e-8;
+  const curvatureCorrectionDeg = curvatureCorrectionSec / 3600;
+
+  const curvatureCorrectionDmsStr = `${curvatureCorrectionSec >= 0 ? '+' : ''}${curvatureCorrectionSec.toFixed(2)}"`;
+
+  // Step 3: Projected Geodetic Azimuth (T)
+  const azimuthGeodeticProjectedDeg = (azimuthPlaneDeg + curvatureCorrectionDeg + 360) % 360;
+  const azimuthGeodeticProjectedDmsStr = formatAzimuthDms(azimuthGeodeticProjectedDeg, 2);
+
+  // Step 4: Meridian Convergence at Station A (γA)
+  const convergenceA = calculateMeridianConvergence(pointAName, eastA, northA, zone, hemisphere, datumKey);
+
+  // Step 5: True/Geographic Azimuth (ZG)
+  // ZG = T + γ
+  const azimuthGeographicDeg = (azimuthGeodeticProjectedDeg + convergenceA.gammaDeg + 360) % 360;
+  const azimuthGeographicDmsStr = formatAzimuthDms(azimuthGeographicDeg, 2);
+
+  return {
+    lineName,
+    pointAName,
+    pointBName,
+    zone,
+    hemisphere,
+    datumName: ellipsoid.name,
+    eastA,
+    northA,
+    latA_Decimal: geoA.latDecimal,
+    latA_Dms: geoA.latDms,
+    lonA_Decimal: geoA.lonDecimal,
+    lonA_Dms: geoA.lonDms,
+    eastB,
+    northB,
+    latB_Decimal: geoB.latDecimal,
+    latB_Dms: geoB.latDms,
+    deltaE,
+    deltaN,
+    distance,
+    bearingDeg,
+    bearingQuadrant: quadrant,
+    bearingDmsStr,
+    azimuthPlaneDeg,
+    azimuthPlaneDmsStr,
+    x1,
+    x2,
+    N_radioA,
+    P_factorA,
+    deltaN_val: deltaN,
+    curvatureCorrectionSec,
+    curvatureCorrectionDeg,
+    curvatureCorrectionDmsStr,
+    azimuthGeodeticProjectedDeg,
+    azimuthGeodeticProjectedDmsStr,
+    convergenceA,
+    azimuthGeographicDeg,
+    azimuthGeographicDmsStr,
+  };
+}
+

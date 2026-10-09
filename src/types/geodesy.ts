@@ -218,3 +218,83 @@ export interface PresetPoint {
   cui?: string;
 }
 
+export interface MeridianConvergenceResult {
+  pointName: string;
+  east: number;
+  north: number;
+  zone: number;
+  hemisphere: 'N' | 'S';
+  latDecimal: number;
+  lonDecimal: number;
+  latDms: DMSCoordinate;
+  lonDms: DMSCoordinate;
+  centralMeridianDeg: number;
+  deltaLonDeg: number;
+  deltaLonRad: number;
+  t: number; // tan(φ)
+  cosPhi: number;
+  eta2: number; // e'^2 * cos^2(φ)
+  eta4: number;
+  L_sign: number;
+  tanGamma: number;
+  gammaRad: number;
+  gammaDeg: number;
+  gammaDmsStr: string;
+  quadrantSignRule: string; // Explanatory sign rule (+/-)
+}
+
+export interface DirectionCalculationResult {
+  lineName: string;
+  pointAName: string;
+  pointBName: string;
+  zone: number;
+  hemisphere: 'N' | 'S';
+  datumName: string;
+  
+  // Point A
+  eastA: number;
+  northA: number;
+  latA_Decimal: number;
+  latA_Dms: DMSCoordinate;
+  lonA_Decimal: number;
+  lonA_Dms: DMSCoordinate;
+  
+  // Point B
+  eastB: number;
+  northB: number;
+  latB_Decimal: number;
+  latB_Dms: DMSCoordinate;
+  
+  // Step 1: Differences & Bearing/Azimuth
+  deltaE: number;
+  deltaN: number;
+  distance: number;
+  bearingDeg: number;
+  bearingQuadrant: string; // e.g. "NE", "SE", "SW", "NW"
+  bearingDmsStr: string;
+  azimuthPlaneDeg: number; // t
+  azimuthPlaneDmsStr: string;
+  
+  // Step 2: Curvature Correction (T - t)
+  x1: number; // |500000 - EA|
+  x2: number; // |500000 - EB|
+  N_radioA: number; // Radio de curvatura de la gran normal en A
+  P_factorA: number; // P
+  deltaN_val: number; // NB - NA
+  curvatureCorrectionSec: number; // (T - t) en segundos sexagesimales
+  curvatureCorrectionDeg: number; // en grados
+  curvatureCorrectionDmsStr: string;
+  
+  // Step 3: Projected Geodetic Azimuth (T)
+  azimuthGeodeticProjectedDeg: number; // T = t + (T - t)
+  azimuthGeodeticProjectedDmsStr: string;
+  
+  // Step 4: Meridian Convergence at Station A (γA)
+  convergenceA: MeridianConvergenceResult;
+  
+  // Step 5: True/Geographic Azimuth (ZG)
+  azimuthGeographicDeg: number; // ZG = T + γ
+  azimuthGeographicDmsStr: string;
+}
+
+
